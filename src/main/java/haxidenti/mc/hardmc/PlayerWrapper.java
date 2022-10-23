@@ -42,12 +42,12 @@ public class PlayerWrapper {
         return player.getNearbyEntities(distance, distance, distance);
     }
 
-    public void teleportToTop(int x, int z) {
+    public Location getTopOfXZ(int x, int z) {
         Location loc = player.getLocation();
         loc.setX(x);
         loc.setZ(z);
         loc.setY(loc.getWorld().getHighestBlockYAt(x, z) + 1);
-        player.teleport(loc);
+        return loc;
     }
 
     public void give(ItemStack item) {

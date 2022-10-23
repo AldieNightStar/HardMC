@@ -1,12 +1,16 @@
 package haxidenti.mc.hardmc;
 
+import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
+import org.bukkit.event.block.Action;
+import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.Collection;
@@ -44,6 +48,67 @@ public final class HardMC extends JavaPlugin implements Listener {
         evt.getPlayer().setBedSpawnLocation(evt.getClickedBlock().getLocation());
         evt.setCancelled(true);
         evt.getPlayer().sendMessage("Bed Location set");
+    }
+
+    @EventHandler
+    void onBreak(PlayerItemBreakEvent event) {
+        Player player = event.getPlayer();
+        if (isDaylight(player.getLocation())) return;
+        makeNearbyMobsAngry(this, new PlayerWrapper(event.getPlayer()), 32);
+    }
+
+    @EventHandler
+    void onConsume(PlayerItemConsumeEvent event) {
+        Player player = event.getPlayer();
+        if (isDaylight(player.getLocation())) return;
+        makeNearbyMobsAngry(this, new PlayerWrapper(player), 12);
+    }
+
+    @EventHandler
+    void onBuild(BlockPlaceEvent event) {
+        Player player = event.getPlayer();
+        if (isDaylight(player.getLocation())) return;
+        makeNearbyMobsAngry(this, new PlayerWrapper(player), 12);
+    }
+
+    @EventHandler
+    void onJump(PlayerJumpEvent event) {
+        Player player = event.getPlayer();
+        if (event.getPlayer().isSneaking()) return;
+        if (isDaylight(player.getLocation())) return;
+        makeNearbyMobsAngry(this, new PlayerWrapper(player), 12);
+    }
+
+    @EventHandler
+    void onInteract(PlayerInteractEvent event) {
+        Player player = event.getPlayer();
+        if (isDaylight(player.getLocation())) return;
+        if (event.getAction() == Action.LEFT_CLICK_BLOCK)
+            makeNearbyMobsAngry(this, new PlayerWrapper(player), 32);
+    }
+
+    @EventHandler
+    void mobKill(EntityDeathEvent event) {
+        if (event.getEntity() instanceof Monster) {
+            Player player = event.getEntity().getKiller();
+            if (player != null) makeNearbyMobsAngry(this, new PlayerWrapper(player), 64);
+        }
+    }
+
+    @EventHandler
+    void onHarvest(PlayerHarvestBlockEvent event) {
+        Player player = event.getPlayer();
+        if (isDaylight(player.getLocation())) return;
+        makeNearbyMobsAngry(this, new PlayerWrapper(player), 32);
+    }
+
+    @EventHandler
+    void playerChest(InventoryOpenEvent event) {
+        if (event.getPlayer() instanceof Player player) {
+            if (isDaylight(player.getLocation())) return;
+            if (event.getPlayer() instanceof Player p)
+                makeNearbyMobsAngry(this, new PlayerWrapper(p), 32);
+        }
     }
 
     @EventHandler

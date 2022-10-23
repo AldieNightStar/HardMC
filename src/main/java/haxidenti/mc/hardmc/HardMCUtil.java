@@ -2,10 +2,12 @@ package haxidenti.mc.hardmc;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Sound;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
+import org.bukkit.entity.Monster;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.scheduler.BukkitScheduler;
@@ -16,6 +18,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 import java.util.logging.Level;
 
@@ -37,6 +40,7 @@ public class HardMCUtil {
         return () -> {
             saveConfigEveryNRepeats(plugin, 10, repeats);
             HardMCRules.mainRules(plugin);
+            repeats.incrementAndGet();
         };
     }
 
@@ -60,7 +64,6 @@ public class HardMCUtil {
     }
 
     public static void saveConfigEveryNRepeats(HardMC plugin, int n, AtomicInteger repeats) {
-        repeats.incrementAndGet();
         if (repeats.get() % n == 0) saveConfigFor(plugin);
     }
 
@@ -220,15 +223,41 @@ public class HardMCUtil {
     }
 
     public static void teleportRandom(HardMC plugin, PlayerWrapper playerWrapper, int distance, Runnable callback) {
-        int x = new Random().nextInt(distance);
-        int z = new Random().nextInt(distance);
+        AtomicReference<Location> locRef = new AtomicReference<>(playerWrapper.player.getLocation());
+        Random random = new Random();
+        for (int i = 0; i < 9; i++) {
+            // Pick random position
+            int x = random.nextInt(distance);
+            int z = random.nextInt(distance);
+            locRef.set(playerWrapper.getTopOfXZ(x, z));
+            // Do not allow to spawn in the Ocean
+            if (locRef.get().getWorld().getBiome(locRef.get()).name().endsWith("OCEAN")) continue;
+
+            break;
+        }
+        // Teleport
         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-            playerWrapper.teleportToTop(x, z);
+            playerWrapper.player.teleport(locRef.get());
             if (callback != null) callback.run();
         }, 0);
     }
 
     public static void giveRequiredItems(PlayerWrapper playerWrapper) {
         playerWrapper.give(new ItemStack(Material.STONE_SWORD), new ItemStack(Material.STONE_AXE), new ItemStack(Material.STONE_PICKAXE), new ItemStack(Material.DARK_OAK_WOOD, 8), new ItemStack(Material.TORCH, 4), new ItemStack(Material.APPLE, 32), new ItemStack(Material.COBBLESTONE, 12), new ItemStack(Material.CRAFTING_TABLE), new ItemStack(Material.FURNACE));
+    }
+
+    public static void makeNearbyMobsAngry(HardMC plugin, PlayerWrapper wrapper, int distance) {
+        wrapper.getNearEntities(distance).stream()
+                .filter(m -> m instanceof Monster)
+                .map(m -> (Monster) m)
+                .forEach(mob -> {
+                    MobMem.Mem mem = plugin.mobmem.getMemFor(mob);
+                    mob.getWorld().playSound(mob, Sound.ENTITY_EVOKER_PREPARE_ATTACK, 1, 1);
+                    mem.isAngry = true;
+                });
+    }
+
+    public static boolean isDaylight(Location location) {
+        return HardMCUtil.isDay(location.getWorld()) && location.getBlock().getLightFromSky() > 6;
     }
 }

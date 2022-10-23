@@ -47,8 +47,12 @@ public class HardMCRules {
 
     public static void nearMonsterAction(HardMC plugin, Monster monster, PlayerWrapper playerWrapper) {
         monster.setTarget(playerWrapper.player);
-        towerBuildOrDigIfNeed(plugin, playerWrapper, monster, 3, true, Material.BIRCH_LEAVES);
-        if (monster instanceof Creeper c) creeperAction(plugin, c, playerWrapper);
+        // If monster is angry (Hears player)
+        MobMem.Mem mem = plugin.mobmem.getMemFor(monster);
+        if (mem.isAngry) {
+            towerBuildOrDigIfNeed(plugin, playerWrapper, monster, 3, true, Material.BIRCH_LEAVES);
+            if (monster instanceof Creeper c) creeperAction(plugin, c, playerWrapper);
+        }
     }
 
     public static void creeperAction(HardMC plugin, Creeper creeper, PlayerWrapper playerWrapper) {

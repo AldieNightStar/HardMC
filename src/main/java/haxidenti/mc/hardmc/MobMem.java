@@ -1,7 +1,6 @@
 package haxidenti.mc.hardmc;
 
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 
 import java.util.ArrayList;
@@ -14,10 +13,15 @@ public class MobMem {
 
     public static class Mem {
         public int allowedDigs = 2;
+        public boolean isAngry = false;
     }
 
     public Mem getMemFor(UUID uid) {
         return memory.computeIfAbsent(uid, k -> new Mem());
+    }
+
+    public Mem getMemFor(Entity ent) {
+        return getMemFor(ent.getUniqueId());
     }
 
     public void cleanProcess() {
