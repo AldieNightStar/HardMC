@@ -2,6 +2,7 @@ package haxidenti.mc.hardmc;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
 import org.bukkit.block.Block;
+import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
@@ -113,13 +114,12 @@ public final class HardMC extends JavaPlugin implements Listener {
 
     @EventHandler
     void playerSpotted(EntityTargetEvent event) {
-        if (event.getReason() != EntityTargetEvent.TargetReason.CLOSEST_PLAYER) return;
+        if (event.getReason() != EntityTargetEvent.TargetReason.CLOSEST_PLAYER && event.getReason() != EntityTargetEvent.TargetReason.CLOSEST_ENTITY) return;
         if (event.getEntity() instanceof Monster monster) {
-            LivingEntity target = monster.getTarget();
+            Entity target = event.getTarget();
             if (target instanceof Player player && random.nextFloat() <= .5f) {
                 PlayerWrapper playerWrapper = new PlayerWrapper(player);
                 makeNearbyMobsAngry(this, playerWrapper, 32, random.nextInt(32, 64));
-                playerWrapper.sendMessage("You were spotted by enemy monster. Now you need to move out");
             }
         }
     }
