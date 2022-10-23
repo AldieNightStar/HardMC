@@ -13,7 +13,7 @@ public class MobMem {
     public static HashMap<UUID, Mem> memory = new HashMap<>(128);
 
     public static class Mem {
-        public Location lastBreak;
+        public int allowedDigs = 2;
     }
 
     public Mem getMemFor(UUID uid) {

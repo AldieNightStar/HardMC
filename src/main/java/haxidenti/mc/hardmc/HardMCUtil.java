@@ -22,6 +22,7 @@ public class HardMCUtil {
     public static void registerScheduler(HardMC plugin, int delay) {
         BukkitScheduler scheduler = plugin.getServer().getScheduler();
         scheduler.scheduleSyncRepeatingTask(plugin, getScheduledTask(plugin), delay, delay);
+        cleanTaskForMobs(plugin, scheduler);
     }
 
     public static void cleanTaskForMobs(HardMC plugin, BukkitScheduler scheduler) {
@@ -83,12 +84,12 @@ public class HardMCUtil {
         return block;
     }
 
-    public static void mobDigging(LivingEntity ent, int distance) {
+    public static void mobDigging(HardMC plugin, LivingEntity ent, int distance) {
         Block blockLooking = HardMCUtil.getBlockLooking(distance, ent);
-        ItemStack digtool = new ItemStack(Material.WOODEN_PICKAXE);
         // Break block and block below
-        blockLooking.breakNaturally(digtool, true);
-        blockLooking.getLocation().add(0, -1, 0).getBlock().breakNaturally(digtool, true);
+        digByHardness(plugin, ent, blockLooking.getLocation(), () -> {
+            digByHardness(plugin, ent, blockLooking.getLocation().add(0, -1, 0), null);
+        });
     }
 
     public static void mobDigDown(HardMC plugin, LivingEntity ent, Runnable callback) {
@@ -105,13 +106,30 @@ public class HardMCUtil {
         if (!block.isSolid()) return false;
         if (block.getType().getHardness() > 100) return false;
         float hardness = block.getType().getHardness();
+        // Don't allow to dig again while limit
+        MobMem.Mem mobMem = plugin.mobmem.getMemFor(ent.getUniqueId());
+        if (mobMem.allowedDigs < 1) return false;
+        // Add limit for digs
+        mobMem.allowedDigs -= 1;
+        // Scheduler
         plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
             // Cancel if mob dead, block is already broken or when position changed already
-            if (ent.isDead()) return;
-            if (!block.isSolid()) return;
-            if (block.getLocation().distance(ent.getLocation()) > 3) return;
+            if (ent.isDead()) {
+                mobMem.allowedDigs += 1;
+                return;
+            }
+            if (!block.isSolid()) {
+                mobMem.allowedDigs += 1;
+                return;
+            }
+            if (block.getLocation().distance(ent.getLocation()) > 3) {
+                mobMem.allowedDigs += 1;
+                return;
+            }
             // Breaking
             block.breakNaturally(new ItemStack(Material.WOODEN_PICKAXE), true);
+            // Allow to dig again
+            mobMem.allowedDigs += 1;
             // Callback
             if (callback != null) callback.run();
         }, (long) hardness * 20);
@@ -186,7 +204,7 @@ public class HardMCUtil {
 
     public static void towerBuildOrDigIfNeed(HardMC plugin, PlayerWrapper playerWrapper, LivingEntity entity, int distance, boolean dig, Material material) {
         buildBridgeIfNeed(playerWrapper, entity, distance, material);
-        mobDigging(entity, distance);
+        mobDigging(plugin, entity, distance);
         towerUpIfNeed(plugin, entity, playerWrapper, dig);
         if (isBelow(playerWrapper.player, entity)) mobDigDown(plugin, entity, null);
     }
