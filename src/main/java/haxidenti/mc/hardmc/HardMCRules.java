@@ -1,10 +1,10 @@
 package haxidenti.mc.hardmc;
 
-import org.bukkit.GameMode;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.World;
+import org.bukkit.*;
 import org.bukkit.entity.*;
+
+import java.time.Instant;
+import java.util.Random;
 
 import static haxidenti.mc.hardmc.HardMCUtil.*;
 
@@ -26,15 +26,16 @@ public class HardMCRules {
     }
 
     public static void actionToSurvivalPlayer(HardMC plugin, PlayerWrapper playerWrapper) {
-        damageWhenDark(playerWrapper, 5, 2);
+        damageWhenDark(plugin, playerWrapper, 5, 2);
         actionForMobs(plugin, playerWrapper);
     }
 
-    public static void damageWhenDark(PlayerWrapper playerWrapper, int minimumLight, double damage) {
+    public static void damageWhenDark(HardMC plugin, PlayerWrapper playerWrapper, int minimumLight, double damage) {
         int light = playerWrapper.getLightLevel();
         if (light < minimumLight) {
             playerWrapper.damage(damage);
             playerWrapper.sendMessageRed("Too dark here. Go to Light.", light + "/" + minimumLight);
+            makeNearbyMobsAngry(plugin, playerWrapper, 6, 9);
         }
     }
 
@@ -49,8 +50,14 @@ public class HardMCRules {
         monster.setTarget(playerWrapper.player);
         // If monster is angry (Hears player)
         MobMem.Mem mem = plugin.mobmem.getMemFor(monster);
-        if (mem.isAngry) {
+        Random random = new Random();
+        if (mem.isAngry()) {
             towerBuildOrDigIfNeed(plugin, playerWrapper, monster, 3, true, Material.BIRCH_LEAVES);
+            // Play sound for angry mobs
+            monster.getWorld().playSound(
+                    monster, Sound.ENTITY_FOX_SCREECH,
+                    random.nextFloat(.5f, 1), random.nextFloat(0.25f, 3)
+            );
             if (monster instanceof Creeper c) creeperAction(plugin, c, playerWrapper);
         }
     }

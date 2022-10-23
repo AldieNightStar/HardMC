@@ -39,7 +39,7 @@ public class PlayerWrapper {
     }
 
     public List<Entity> getNearEntities(int distance) {
-        return player.getNearbyEntities(distance, distance, distance);
+        return player.getNearbyEntities(distance, (double) distance / 2, distance);
     }
 
     public Location getTopOfXZ(int x, int z) {
@@ -55,7 +55,7 @@ public class PlayerWrapper {
         loc.getWorld().dropItem(loc, item);
     }
 
-    public void give(ItemStack ... items) {
+    public void give(ItemStack... items) {
         Location loc = player.getLocation().add(0, 1, 0);
         for (ItemStack item : items) {
             loc.getWorld().dropItem(loc, item);

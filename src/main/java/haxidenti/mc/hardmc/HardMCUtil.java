@@ -150,10 +150,13 @@ public class HardMCUtil {
 
     public static void towerUpIfNeed(HardMC plugin, LivingEntity ent, PlayerWrapper playerWrapper, boolean digging) {
         if (isBelowAndHorizontallyClose(ent, playerWrapper.player, 6)) {
-            asyncWhile(plugin, 10, () -> ent.getLocation().getY() <= playerWrapper.player.getLocation().getY(), () -> {
-                mobDigUp(plugin, ent, null);
-                towerUp(ent, Material.BIRCH_LEAVES);
-            });
+            MobMem.Mem mem = plugin.mobmem.getMemFor(ent);
+            asyncWhile(plugin, 10,
+                    () -> ent.getLocation().getY() <= playerWrapper.player.getLocation().getY() && mem.isAngry(),
+                    () -> {
+                        mobDigUp(plugin, ent, null);
+                        towerUp(ent, Material.BIRCH_LEAVES);
+                    });
         }
     }
 
@@ -246,18 +249,27 @@ public class HardMCUtil {
         playerWrapper.give(new ItemStack(Material.STONE_SWORD), new ItemStack(Material.STONE_AXE), new ItemStack(Material.STONE_PICKAXE), new ItemStack(Material.DARK_OAK_WOOD, 8), new ItemStack(Material.TORCH, 4), new ItemStack(Material.APPLE, 32), new ItemStack(Material.COBBLESTONE, 12), new ItemStack(Material.CRAFTING_TABLE), new ItemStack(Material.FURNACE));
     }
 
-    public static void makeNearbyMobsAngry(HardMC plugin, PlayerWrapper wrapper, int distance) {
+    public static void makeNearbyMobsAngry(HardMC plugin, PlayerWrapper wrapper, int distance, int seconds) {
+        AtomicInteger count = new AtomicInteger();
+        Random random = new Random();
         wrapper.getNearEntities(distance).stream()
                 .filter(m -> m instanceof Monster)
                 .map(m -> (Monster) m)
+                .filter(m -> !plugin.mobmem.getMemFor(m).isAngry())
                 .forEach(mob -> {
+                    count.getAndIncrement();
                     MobMem.Mem mem = plugin.mobmem.getMemFor(mob);
-                    mob.getWorld().playSound(mob, Sound.ENTITY_EVOKER_PREPARE_ATTACK, 1, 1);
-                    mem.isAngry = true;
+                    plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
+                        mob.getWorld().playSound(mob, Sound.ENTITY_FOX_SCREECH, random.nextFloat(1, 3), .25f);
+                    }, random.nextInt(1, 300));
+                    mem.makeAngry(seconds);
                 });
+        if (count.get() > 5) {
+            wrapper.sendMessageRed("A lot of Monsters getting angry:", "" + count.get());
+        }
     }
 
     public static boolean isDaylight(Location location) {
-        return HardMCUtil.isDay(location.getWorld()) && location.getBlock().getLightFromSky() > 6;
+        return location.getBlock().getLightFromSky() > 6;
     }
 }

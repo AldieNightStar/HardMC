@@ -3,6 +3,7 @@ package haxidenti.mc.hardmc;
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Entity;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -13,7 +14,18 @@ public class MobMem {
 
     public static class Mem {
         public int allowedDigs = 2;
-        public boolean isAngry = false;
+        public long angerLastTime = 0;
+
+        public boolean isAngry() {
+            return Instant.now().toEpochMilli() <= angerLastTime;
+        }
+
+        public void makeAngry(int sec) {
+            long millis = Instant.now().toEpochMilli() + (1000L * sec);
+            if (angerLastTime < millis) {
+                angerLastTime = millis;
+            }
+        }
     }
 
     public Mem getMemFor(UUID uid) {
