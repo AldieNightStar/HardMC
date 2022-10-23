@@ -1,0 +1,4 @@
+name: HardMC
+version: '1.0'
+main: haxidenti.mc.hardmc.HardMC
+api-version: 1.19
