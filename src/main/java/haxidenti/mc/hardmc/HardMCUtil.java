@@ -152,7 +152,7 @@ public class HardMCUtil {
         if (isBelowAndHorizontallyClose(ent, playerWrapper.player, 6)) {
             MobMem.Mem mem = plugin.mobmem.getMemFor(ent);
             asyncWhile(plugin, 10,
-                    () -> ent.getLocation().getY() <= playerWrapper.player.getLocation().getY() && mem.isAngryForLocation(playerWrapper.player.getLocation()),
+                    () -> ent.getLocation().getY() <= playerWrapper.player.getLocation().getY() && mem.isAngryAt(playerWrapper.player.getLocation()),
                     () -> {
                         mobDigUp(plugin, ent, null);
                         towerUp(ent, Material.BIRCH_LEAVES);
@@ -255,7 +255,7 @@ public class HardMCUtil {
         wrapper.getNearEntities(distance).stream()
                 .filter(m -> m instanceof Monster)
                 .map(m -> (Monster) m)
-                .filter(m -> !plugin.mobmem.getMemFor(m).isAngryForLocation(wrapper.player.getLocation()))
+                .filter(m -> !plugin.mobmem.getMemFor(m).isAngryAt(wrapper.player.getLocation()))
                 .forEach(mob -> {
                     count.getAndIncrement();
                     MobMem.Mem mem = plugin.mobmem.getMemFor(mob);

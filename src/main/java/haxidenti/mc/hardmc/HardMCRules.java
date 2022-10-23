@@ -49,7 +49,7 @@ public class HardMCRules {
         // If monster is angry (Hears player)
         MobMem.Mem mem = plugin.mobmem.getMemFor(monster);
         Random random = new Random();
-        if (mem.isAngryForLocation(playerWrapper.player.getLocation())) {
+        if (mem.isAngryAt(playerWrapper.player.getLocation())) {
             monster.setTarget(playerWrapper.player);
             towerBuildOrDigIfNeed(plugin, playerWrapper, monster, 3, true, Material.BIRCH_LEAVES);
             // Play sound for angry mobs

@@ -113,16 +113,21 @@ public final class HardMC extends JavaPlugin implements Listener {
 
     @EventHandler
     void playerSpotted(EntityTargetEvent event) {
+        if (event.getReason() != EntityTargetEvent.TargetReason.CLOSEST_PLAYER) return;
         if (event.getEntity() instanceof Monster monster) {
             LivingEntity target = monster.getTarget();
             if (target instanceof Player player && random.nextFloat() <= .5f) {
-                makeNearbyMobsAngry(this, new PlayerWrapper(player), 10, random.nextInt(32, 64));
+                PlayerWrapper playerWrapper = new PlayerWrapper(player);
+                makeNearbyMobsAngry(this, playerWrapper, 32, random.nextInt(32, 64));
+                playerWrapper.sendMessage("You were spotted by enemy monster. Now you need to move out");
             }
         }
     }
 
     @EventHandler
     void playerRespawn(PlayerRespawnEvent event) {
+        PlayerWrapper playerWrapper = new PlayerWrapper(event.getPlayer());
+        if (playerWrapper.player.getBedSpawnLocation() != null) return;
         // Set time to day if only single player on the server
         getServer().getScheduler().scheduleSyncDelayedTask(this, () -> {
             Collection<? extends Player> players = getServer().getOnlinePlayers();
@@ -134,9 +139,6 @@ public final class HardMC extends JavaPlugin implements Listener {
         });
 
         // Teleport randomly
-        // Exception is when player has a bed spawn location
-        PlayerWrapper playerWrapper = new PlayerWrapper(event.getPlayer());
-        if (playerWrapper.player.getBedSpawnLocation() != null) return;
         teleportRandom(this, playerWrapper, 320000, () -> {
             playerWrapper.getNearEntities(12).stream()
                     // Kill all nearby monsters

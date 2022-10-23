@@ -19,7 +19,7 @@ public class MobMem {
 
         public Location angerLocation;
 
-        public boolean isAngryForLocation(Location location) {
+        public boolean isAngryAt(Location location) {
             if (angerLocation == null) return false;
             return (Instant.now().toEpochMilli() <= angerLastTime) && angerLocation.distance(location) <= 12;
         }
