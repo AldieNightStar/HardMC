@@ -16,6 +16,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Supplier;
 import java.util.logging.Level;
 
 public class HardMCUtil {
@@ -147,8 +148,13 @@ public class HardMCUtil {
 
     public static void towerUpIfNeed(HardMC plugin, LivingEntity ent, PlayerWrapper playerWrapper, boolean digging) {
         if (isBelowAndHorizontallyClose(ent, playerWrapper.player, 6)) {
-            if (digging) mobDigUp(plugin, ent, null);
-            asyncRepeat(plugin, 10, 5, i -> towerUp(ent, Material.BIRCH_LEAVES));
+            asyncWhile(plugin, 10,
+                    () -> ent.getLocation().getY() <= playerWrapper.player.getLocation().getY(),
+                    () -> {
+                        mobDigUp(plugin, ent, null);
+                        towerUp(ent, Material.BIRCH_LEAVES);
+                    }
+            );
         }
     }
 
@@ -172,11 +178,18 @@ public class HardMCUtil {
     }
 
     public static void asyncRepeat(Plugin plugin, int delay, int max, Consumer<Integer> c) {
-        AtomicInteger i = new AtomicInteger(0);
+        AtomicInteger counter = new AtomicInteger(0);
+        asyncWhile(plugin, delay,
+                () -> counter.getAndIncrement() < max,
+                () -> c.accept(counter.get())
+        );
+    }
+
+    public static void asyncWhile(Plugin plugin, int delay, Supplier<Boolean> bool, Runnable runnable) {
         Runnable[] _r = new Runnable[1];
         _r[0] = () -> {
-            if (i.getAndIncrement() < max) {
-                c.accept(i.get());
+            if (bool.get()) {
+                runnable.run();
                 plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, _r[0], delay);
             }
         };
