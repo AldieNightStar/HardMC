@@ -1,6 +1,7 @@
 package haxidenti.mc.hardmc;
 
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Entity;
 
 import java.time.Instant;
@@ -16,11 +17,15 @@ public class MobMem {
         public int allowedDigs = 2;
         public long angerLastTime = 0;
 
-        public boolean isAngry() {
-            return Instant.now().toEpochMilli() <= angerLastTime;
+        public Location angerLocation;
+
+        public boolean isAngryForLocation(Location location) {
+            if (angerLocation == null) return false;
+            return (Instant.now().toEpochMilli() <= angerLastTime) && angerLocation.distance(location) <= 12;
         }
 
-        public void makeAngry(int sec) {
+        public void makeAngry(int sec, Location location) {
+            this.angerLocation = location;
             long millis = Instant.now().toEpochMilli() + (1000L * sec);
             if (angerLastTime < millis) {
                 angerLastTime = millis;

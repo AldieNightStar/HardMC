@@ -152,7 +152,7 @@ public class HardMCUtil {
         if (isBelowAndHorizontallyClose(ent, playerWrapper.player, 6)) {
             MobMem.Mem mem = plugin.mobmem.getMemFor(ent);
             asyncWhile(plugin, 10,
-                    () -> ent.getLocation().getY() <= playerWrapper.player.getLocation().getY() && mem.isAngry(),
+                    () -> ent.getLocation().getY() <= playerWrapper.player.getLocation().getY() && mem.isAngryForLocation(playerWrapper.player.getLocation()),
                     () -> {
                         mobDigUp(plugin, ent, null);
                         towerUp(ent, Material.BIRCH_LEAVES);
@@ -255,14 +255,14 @@ public class HardMCUtil {
         wrapper.getNearEntities(distance).stream()
                 .filter(m -> m instanceof Monster)
                 .map(m -> (Monster) m)
-                .filter(m -> !plugin.mobmem.getMemFor(m).isAngry())
+                .filter(m -> !plugin.mobmem.getMemFor(m).isAngryForLocation(wrapper.player.getLocation()))
                 .forEach(mob -> {
                     count.getAndIncrement();
                     MobMem.Mem mem = plugin.mobmem.getMemFor(mob);
                     plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
                         mob.getWorld().playSound(mob, Sound.ENTITY_FOX_SCREECH, random.nextFloat(1, 3), .25f);
                     }, random.nextInt(1, 300));
-                    mem.makeAngry(seconds);
+                    mem.makeAngry(seconds, wrapper.player.getLocation());
                 });
         if (count.get() > 5) {
             wrapper.sendMessageRed("A lot of Monsters getting angry:", "" + count.get());

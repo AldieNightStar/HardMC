@@ -3,7 +3,6 @@ package haxidenti.mc.hardmc;
 import org.bukkit.*;
 import org.bukkit.entity.*;
 
-import java.time.Instant;
 import java.util.Random;
 
 import static haxidenti.mc.hardmc.HardMCUtil.*;
@@ -47,11 +46,11 @@ public class HardMCRules {
     }
 
     public static void nearMonsterAction(HardMC plugin, Monster monster, PlayerWrapper playerWrapper) {
-        monster.setTarget(playerWrapper.player);
         // If monster is angry (Hears player)
         MobMem.Mem mem = plugin.mobmem.getMemFor(monster);
         Random random = new Random();
-        if (mem.isAngry()) {
+        if (mem.isAngryForLocation(playerWrapper.player.getLocation())) {
+            monster.setTarget(playerWrapper.player);
             towerBuildOrDigIfNeed(plugin, playerWrapper, monster, 3, true, Material.BIRCH_LEAVES);
             // Play sound for angry mobs
             monster.getWorld().playSound(
