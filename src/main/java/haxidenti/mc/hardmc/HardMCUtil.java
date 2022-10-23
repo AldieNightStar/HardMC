@@ -189,7 +189,7 @@ public class HardMCUtil {
         dir.setY(0);
         for (int i = 0; i < distance; i++) {
             loc.add(dir);
-            if (loc.getBlock().isSolid()) continue;
+            if (loc.getBlock().isSolid()) break;
             loc.getBlock().setType(material);
         }
     }
