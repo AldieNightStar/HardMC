@@ -39,7 +39,7 @@ public class HardMCRules {
     }
 
     public static void actionForMobs(HardMC plugin, PlayerWrapper playerWrapper) {
-        playerWrapper.getNearEntities(32).stream()
+        playerWrapper.getNearEntities(64).stream()
                 .filter(e -> e instanceof Monster)
                 .map(e -> (Monster) e)
                 .forEach(monster -> nearMonsterAction(plugin, monster, playerWrapper));

@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.UUID;
 
 public class MobMem {
-    public static HashMap<UUID, Mem> memory = new HashMap<>(128);
+    public HashMap<UUID, Mem> memory = new HashMap<>(128);
 
     public static class Mem {
         public int allowedDigs = 2;

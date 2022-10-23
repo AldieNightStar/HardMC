@@ -98,8 +98,7 @@ public class HardMCUtil {
     }
 
     public static boolean mobDigUp(HardMC plugin, LivingEntity ent, Runnable callback) {
-        return (digByHardness(plugin, ent, ent.getLocation().add(0, 1, 0), callback) ||
-                digByHardness(plugin, ent, ent.getLocation().add(0, 2, 0), callback));
+        return (digByHardness(plugin, ent, ent.getLocation().add(0, 1, 0), callback) || digByHardness(plugin, ent, ent.getLocation().add(0, 2, 0), callback));
     }
 
     public static boolean digByHardness(HardMC plugin, LivingEntity ent, Location loc, Runnable callback) {
@@ -148,13 +147,10 @@ public class HardMCUtil {
 
     public static void towerUpIfNeed(HardMC plugin, LivingEntity ent, PlayerWrapper playerWrapper, boolean digging) {
         if (isBelowAndHorizontallyClose(ent, playerWrapper.player, 6)) {
-            asyncWhile(plugin, 10,
-                    () -> ent.getLocation().getY() <= playerWrapper.player.getLocation().getY(),
-                    () -> {
-                        mobDigUp(plugin, ent, null);
-                        towerUp(ent, Material.BIRCH_LEAVES);
-                    }
-            );
+            asyncWhile(plugin, 10, () -> ent.getLocation().getY() <= playerWrapper.player.getLocation().getY(), () -> {
+                mobDigUp(plugin, ent, null);
+                towerUp(ent, Material.BIRCH_LEAVES);
+            });
         }
     }
 
@@ -171,18 +167,12 @@ public class HardMCUtil {
     }
 
     public static double horizontalDistance(Location loc, Location loc2) {
-        return Math.min(
-                Math.abs(loc.getX() - loc2.getX()),
-                Math.abs(loc.getZ() - loc2.getZ())
-        );
+        return Math.min(Math.abs(loc.getX() - loc2.getX()), Math.abs(loc.getZ() - loc2.getZ()));
     }
 
     public static void asyncRepeat(Plugin plugin, int delay, int max, Consumer<Integer> c) {
         AtomicInteger counter = new AtomicInteger(0);
-        asyncWhile(plugin, delay,
-                () -> counter.getAndIncrement() < max,
-                () -> c.accept(counter.get())
-        );
+        asyncWhile(plugin, delay, () -> counter.getAndIncrement() < max, () -> c.accept(counter.get()));
     }
 
     public static void asyncWhile(Plugin plugin, int delay, Supplier<Boolean> bool, Runnable runnable) {
@@ -219,7 +209,9 @@ public class HardMCUtil {
         buildBridgeIfNeed(playerWrapper, entity, distance, material);
         mobDigging(plugin, entity, distance);
         towerUpIfNeed(plugin, entity, playerWrapper, dig);
-        if (isBelow(playerWrapper.player, entity)) mobDigDown(plugin, entity, null);
+        if (isBelow(playerWrapper.player, entity)) {
+            HardMCUtil.asyncWhile(plugin, 20, () -> isBelow(playerWrapper.player, entity), () -> mobDigDown(plugin, entity, null));
+        }
     }
 
     public static boolean isDay(World world) {
@@ -237,16 +229,6 @@ public class HardMCUtil {
     }
 
     public static void giveRequiredItems(PlayerWrapper playerWrapper) {
-        playerWrapper.give(
-                new ItemStack(Material.STONE_SWORD),
-                new ItemStack(Material.STONE_AXE),
-                new ItemStack(Material.STONE_PICKAXE),
-                new ItemStack(Material.DARK_OAK_WOOD, 8),
-                new ItemStack(Material.TORCH, 4),
-                new ItemStack(Material.APPLE, 32),
-                new ItemStack(Material.COBBLESTONE, 12),
-                new ItemStack(Material.CRAFTING_TABLE),
-                new ItemStack(Material.FURNACE)
-        );
+        playerWrapper.give(new ItemStack(Material.STONE_SWORD), new ItemStack(Material.STONE_AXE), new ItemStack(Material.STONE_PICKAXE), new ItemStack(Material.DARK_OAK_WOOD, 8), new ItemStack(Material.TORCH, 4), new ItemStack(Material.APPLE, 32), new ItemStack(Material.COBBLESTONE, 12), new ItemStack(Material.CRAFTING_TABLE), new ItemStack(Material.FURNACE));
     }
 }
