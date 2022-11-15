@@ -9,6 +9,8 @@ import org.bukkit.inventory.ItemStack;
 import java.util.List;
 import java.util.UUID;
 
+import static haxidenti.mc.hardmc.HardMCUtil.getAngryMobsCount;
+
 public class PlayerWrapper {
     public Player player;
 
@@ -59,6 +61,24 @@ public class PlayerWrapper {
         Location loc = player.getLocation().add(0, 1, 0);
         for (ItemStack item : items) {
             loc.getWorld().dropItem(loc, item);
+        }
+    }
+
+    public boolean isSneaking() {
+        return player.isSneaking();
+    }
+
+    public PlayerMem getMem(HardMC plugin) {
+        return plugin.playerMemMap.computeIfAbsent(player.getUniqueId(), k -> new PlayerMem());
+    }
+
+    public void showAnger(HardMC plugin) {
+        sendMessageRed("/anger", "Angry: " + getAngryMobsCount(plugin, this));
+    }
+
+    public void tryShowAnger(HardMC plugin) {
+        if (getMem(plugin).showingAnger) {
+            showAnger(plugin);
         }
     }
 }

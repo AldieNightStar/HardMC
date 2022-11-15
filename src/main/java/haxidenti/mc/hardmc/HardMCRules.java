@@ -1,7 +1,8 @@
 package haxidenti.mc.hardmc;
 
 import org.bukkit.*;
-import org.bukkit.entity.*;
+import org.bukkit.entity.Creeper;
+import org.bukkit.entity.Monster;
 
 import java.util.Random;
 
@@ -27,6 +28,7 @@ public class HardMCRules {
     public static void actionToSurvivalPlayer(HardMC plugin, PlayerWrapper playerWrapper) {
         damageWhenDark(plugin, playerWrapper, 5, 2);
         actionForMobs(plugin, playerWrapper);
+        playerWrapper.tryShowAnger(plugin);
     }
 
     public static void damageWhenDark(HardMC plugin, PlayerWrapper playerWrapper, int minimumLight, double damage) {
@@ -51,11 +53,14 @@ public class HardMCRules {
         Random random = new Random();
         if (mem.isAngryAt(playerWrapper.player.getLocation())) {
             monster.setTarget(playerWrapper.player);
+            // May be monster will calm down by himself
+            HardMCUtil.tryCalmDown(random, mem, playerWrapper, monster.getLocation(), .1f);
+            // Towering and digging
             towerBuildOrDigIfNeed(plugin, playerWrapper, monster, 3, true, Material.BIRCH_LEAVES);
             // Play sound for angry mobs
             monster.getWorld().playSound(
                     monster, Sound.ENTITY_FOX_SCREECH,
-                    random.nextFloat(.5f, 1), random.nextFloat(0.25f, 3)
+                    random.nextFloat(.75f, 1), random.nextFloat(0.01f, .1f)
             );
             if (monster instanceof Creeper c) creeperAction(plugin, c, playerWrapper);
         }

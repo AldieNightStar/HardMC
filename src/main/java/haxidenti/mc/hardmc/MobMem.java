@@ -31,6 +31,11 @@ public class MobMem {
                 angerLastTime = millis;
             }
         }
+
+        public void makePeaceful() {
+            angerLocation = null;
+            angerLastTime = 0;
+        }
     }
 
     public Mem getMemFor(UUID uid) {

@@ -2,3 +2,6 @@ name: HardMC
 version: '1.0'
 main: haxidenti.mc.hardmc.HardMC
 api-version: 1.19
+commands:
+  anger:
+    description: Get's anger of mobs

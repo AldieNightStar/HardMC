@@ -14,13 +14,10 @@ import org.bukkit.scheduler.BukkitScheduler;
 import org.bukkit.util.Consumer;
 import org.bukkit.util.Vector;
 
-import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
-import java.util.logging.Level;
 
 public class HardMCUtil {
     public static void registerScheduler(HardMC plugin, int delay) {
@@ -38,33 +35,9 @@ public class HardMCUtil {
     public static Runnable getScheduledTask(HardMC plugin) {
         AtomicInteger repeats = new AtomicInteger();
         return () -> {
-            saveConfigEveryNRepeats(plugin, 10, repeats);
             HardMCRules.mainRules(plugin);
             repeats.incrementAndGet();
         };
-    }
-
-    public static void loadConfigFor(HardMC plugin) {
-        try {
-            plugin.config = HardMCConfig.loadConfig(plugin);
-            plugin.getLogger().log(Level.INFO, "Config is loaded successfully");
-        } catch (FileNotFoundException e) {
-            plugin.config = new HardMCConfig();
-            plugin.getLogger().log(Level.INFO, "No Config found so i create new one");
-        }
-    }
-
-    public static void saveConfigFor(HardMC plugin) {
-        try {
-            plugin.config.saveConfig(plugin);
-            plugin.getLogger().log(Level.INFO, "Config saved!");
-        } catch (IOException e) {
-            plugin.getLogger().log(Level.WARNING, "Wasn't able to save the config");
-        }
-    }
-
-    public static void saveConfigEveryNRepeats(HardMC plugin, int n, AtomicInteger repeats) {
-        if (repeats.get() % n == 0) saveConfigFor(plugin);
     }
 
     public static boolean isClose(int horizontalDistance, int verticalDistance, Location loc1, Location loc2) {
@@ -260,7 +233,7 @@ public class HardMCUtil {
                     count.getAndIncrement();
                     MobMem.Mem mem = plugin.mobmem.getMemFor(mob);
                     plugin.getServer().getScheduler().scheduleSyncDelayedTask(plugin, () -> {
-                        mob.getWorld().playSound(mob, Sound.ENTITY_FOX_SCREECH, random.nextFloat(1, 3), .25f);
+                        mob.getWorld().playSound(mob, Sound.ENTITY_FOX_SCREECH, random.nextFloat(1, 3), .1f);
                     }, random.nextInt(1, 300));
                     mem.makeAngry(seconds, wrapper.player.getLocation());
                 });
@@ -269,7 +242,27 @@ public class HardMCUtil {
         }
     }
 
+    public static boolean isAngryAt(HardMC plugin, Monster monster, Location location) {
+        return plugin.mobmem.getMemFor(monster).isAngryAt(location);
+    }
+
     public static boolean isDaylight(Location location) {
         return location.getBlock().getLightFromSky() > 6;
+    }
+
+    public static long getAngryMobsCount(HardMC plugin, PlayerWrapper playerWrapper) {
+        return playerWrapper.getNearEntities(128)
+                .stream()
+                .filter(e -> e instanceof Monster)
+                .map(e -> (Monster) e)
+                .filter(m -> isAngryAt(plugin, m, playerWrapper.player.getLocation()))
+                .count();
+    }
+
+    public static void tryCalmDown(Random random, MobMem.Mem mem, PlayerWrapper playerWrapper, Location monsterLoc, float chance) {
+        if (playerWrapper.player.getLocation().distance(monsterLoc) < 12) return;
+        if (random.nextFloat() > chance) return;
+        if (!playerWrapper.isSneaking()) return;
+        mem.makePeaceful();
     }
 }

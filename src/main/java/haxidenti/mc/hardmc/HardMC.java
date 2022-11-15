@@ -1,10 +1,11 @@
 package haxidenti.mc.hardmc;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
-import org.bukkit.Keyed;
+import it.unimi.dsi.fastutil.Hash;
 import org.bukkit.block.Block;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -15,31 +16,29 @@ import org.bukkit.event.entity.EntityDeathEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.player.*;
 import org.bukkit.plugin.java.JavaPlugin;
+import org.jetbrains.annotations.NotNull;
 
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.Random;
+import java.util.UUID;
 
 import static haxidenti.mc.hardmc.HardMCUtil.*;
 
 public final class HardMC extends JavaPlugin implements Listener {
-
-    public HardMCConfig config;
     public Random random;
 
     public MobMem mobmem;
+
+    public HashMap<UUID, PlayerMem> playerMemMap;
 
     @Override
     public void onEnable() {
         random = new Random();
         mobmem = new MobMem();
-        loadConfigFor(this);
+        playerMemMap = new HashMap<>();
         registerScheduler(this, 100);
         getServer().getPluginManager().registerEvents(this, this);
-    }
-
-    @Override
-    public void onDisable() {
-        saveConfigFor(this);
     }
 
     @EventHandler
@@ -58,6 +57,22 @@ public final class HardMC extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         if (isDaylight(player.getLocation())) return;
         makeNearbyMobsAngry(this, new PlayerWrapper(event.getPlayer()), 12, random.nextInt(10, 50));
+    }
+
+    @Override
+    public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
+        if (!(sender instanceof Player)) {
+            return true;
+        }
+        if (command.getName().equalsIgnoreCase("anger")) {
+            PlayerWrapper playerWrapper = new PlayerWrapper((Player) sender);
+            PlayerMem playerMem = playerWrapper.getMem(this);
+            playerMem.showingAnger = !playerMem.showingAnger;
+            String onOff = (playerMem.showingAnger) ? "on" : "off";
+            playerWrapper.sendMessageRed("Showing anger mode is", onOff);
+            return true;
+        }
+        return false;
     }
 
     @EventHandler
@@ -115,7 +130,8 @@ public final class HardMC extends JavaPlugin implements Listener {
 
     @EventHandler
     void playerSpotted(EntityTargetEvent event) {
-        if (event.getReason() != EntityTargetEvent.TargetReason.CLOSEST_PLAYER && event.getReason() != EntityTargetEvent.TargetReason.CLOSEST_ENTITY) return;
+        if (event.getReason() != EntityTargetEvent.TargetReason.CLOSEST_PLAYER && event.getReason() != EntityTargetEvent.TargetReason.CLOSEST_ENTITY)
+            return;
         if (event.getEntity() instanceof Monster monster) {
             Entity target = event.getTarget();
             if (target instanceof Player player && random.nextFloat() <= .5f) {
