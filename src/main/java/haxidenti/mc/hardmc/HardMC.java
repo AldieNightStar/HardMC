@@ -1,6 +1,7 @@
 package haxidenti.mc.hardmc;
 
 import com.destroystokyo.paper.event.player.PlayerJumpEvent;
+import org.bukkit.Keyed;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
@@ -56,14 +57,14 @@ public final class HardMC extends JavaPlugin implements Listener {
     void onBreak(PlayerItemBreakEvent event) {
         Player player = event.getPlayer();
         if (isDaylight(player.getLocation())) return;
-        makeNearbyMobsAngry(this, new PlayerWrapper(event.getPlayer()), 6, random.nextInt(10, 32));
+        makeNearbyMobsAngry(this, new PlayerWrapper(event.getPlayer()), 12, random.nextInt(10, 50));
     }
 
     @EventHandler
     void onConsume(PlayerItemConsumeEvent event) {
         Player player = event.getPlayer();
         if (isDaylight(player.getLocation())) return;
-        makeNearbyMobsAngry(this, new PlayerWrapper(player), 6, random.nextInt(10, 20));
+        makeNearbyMobsAngry(this, new PlayerWrapper(player), 12, random.nextInt(10, 30));
     }
 
     @EventHandler
@@ -71,7 +72,7 @@ public final class HardMC extends JavaPlugin implements Listener {
         Player player = event.getPlayer();
         if (isDaylight(player.getLocation())) return;
         if (random.nextFloat() <= .5f) {
-            makeNearbyMobsAngry(this, new PlayerWrapper(player), 6, random.nextInt(6, 15));
+            makeNearbyMobsAngry(this, new PlayerWrapper(player), 12, random.nextInt(6, 50));
         }
     }
 
@@ -81,7 +82,7 @@ public final class HardMC extends JavaPlugin implements Listener {
         if (event.getPlayer().isSneaking()) return;
         if (isDaylight(player.getLocation())) return;
         if (random.nextFloat() <= .5f) {
-            makeNearbyMobsAngry(this, new PlayerWrapper(player), 6, random.nextInt(25, 32));
+            makeNearbyMobsAngry(this, new PlayerWrapper(player), 12, random.nextInt(25, 50));
         }
     }
 
@@ -89,7 +90,7 @@ public final class HardMC extends JavaPlugin implements Listener {
     void mobKill(EntityDeathEvent event) {
         if (event.getEntity() instanceof Monster) {
             Player player = event.getEntity().getKiller();
-            if (player != null) makeNearbyMobsAngry(this, new PlayerWrapper(player), 64, random.nextInt(25, 32));
+            if (player != null) makeNearbyMobsAngry(this, new PlayerWrapper(player), 128, random.nextInt(60, 120));
         }
     }
 
@@ -106,8 +107,8 @@ public final class HardMC extends JavaPlugin implements Listener {
     void onDamage(EntityDamageEvent event) {
         if (event.getEntity() instanceof Player player) {
             if (isDaylight(player.getLocation())) return;
-            if (random.nextFloat() <= .25f) {
-                makeNearbyMobsAngry(this, new PlayerWrapper(player), 6, random.nextInt(32, 64));
+            if (random.nextFloat() <= .5f) {
+                makeNearbyMobsAngry(this, new PlayerWrapper(player), 32, random.nextInt(32, 64));
             }
         }
     }
@@ -119,7 +120,7 @@ public final class HardMC extends JavaPlugin implements Listener {
             Entity target = event.getTarget();
             if (target instanceof Player player && random.nextFloat() <= .5f) {
                 PlayerWrapper playerWrapper = new PlayerWrapper(player);
-                makeNearbyMobsAngry(this, playerWrapper, 32, random.nextInt(32, 64));
+                makeNearbyMobsAngry(this, playerWrapper, 64, random.nextInt(32, 64));
             }
         }
     }

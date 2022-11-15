@@ -39,7 +39,7 @@ public class PlayerWrapper {
     }
 
     public List<Entity> getNearEntities(int distance) {
-        return player.getNearbyEntities(distance, (double) distance / 2, distance);
+        return player.getNearbyEntities(distance, (double) distance, distance);
     }
 
     public Location getTopOfXZ(int x, int z) {
